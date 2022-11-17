@@ -7,7 +7,7 @@ log.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%SZ",
     level=log.ERROR
 )
-EXTRA_DIFFUSE = True
+EXTRA_DIFFUSE = False
 def removeDuplicates(array):
     newArr = []
     for i in array:
@@ -72,22 +72,7 @@ def encryptDecryptPixel(encryptResult,i,halfLength,colorKeyMatrix,color,isEncryp
         else:
             encryptResult[i]=colorKeyMatrix[floc[0],sloc[1]]
             encryptResult[halfLength+i] = colorKeyMatrix[sloc[0],floc[1]]
-R,G,B,A,s=readRGB('key.png',True)
-R=removeDuplicates(R)
-G=removeDuplicates(G)
-B=removeDuplicates(B)
-R.extend([x for x in range(256) if x not in R])
-RkeyMatrix = np.reshape(R, (16,16))
-G.extend([x for x in range(256) if x not in G])
-GkeyMatrix = np.reshape(G, (16,16))
-B.extend([x for x in range(256) if x not in B])
-BkeyMatrix = np.reshape(B, (16,16))
-log.debug('R key matrix:')
-log.debug(RkeyMatrix)
-log.debug('G key matrix:')
-log.debug(GkeyMatrix)
-log.debug('B key matrix:')
-log.debug(BkeyMatrix)
+
 def findLoc(mat,x):
     coordinates = np.where(mat==x)
     return [coordinates[0][0],coordinates[1][0]]
@@ -102,10 +87,10 @@ def encrypt():
     log.info(encryptedR.shape)
     halfLength = len(R)//2
     for i in range(halfLength):
-    #    encryptDecryptPixel(encryptedR,i,halfLength,BkeyMatrix,R)
-       encryptDecryptPixel(encryptedR,i,halfLength,RkeyMatrix,R)
-       encryptDecryptPixel(encryptedG,i,halfLength,RkeyMatrix,G)
-       encryptDecryptPixel(encryptedB,i,halfLength,RkeyMatrix,B)
+    #   encryptDecryptPixel(encryptedR,i,halfLength,BkeyMatrix,R)
+        encryptDecryptPixel(encryptedR,i,halfLength,RkeyMatrix,R)
+        encryptDecryptPixel(encryptedG,i,halfLength,RkeyMatrix,G)
+        encryptDecryptPixel(encryptedB,i,halfLength,RkeyMatrix,B)
     #    encryptDecryptPixel(encryptedB,i,halfLength,GkeyMatrix,B)
     fullImage1D=[]
     log.debug(f'encryption {R=}')
@@ -150,6 +135,22 @@ def decrypt():
     imageArr = np.reshape(fullImage1D,(y,x,z))
     image = Image.fromarray(imageArr.astype('uint8'),'RGBA')
     image.save('original.png')
+R,G,B,A,s=readRGB('key.png',True)
+R=removeDuplicates(R)
+G=removeDuplicates(G)
+B=removeDuplicates(B)
+R.extend([x for x in range(256) if x not in R])
+RkeyMatrix = np.reshape(R, (16,16))
+G.extend([x for x in range(256) if x not in G])
+GkeyMatrix = np.reshape(G, (16,16))
+B.extend([x for x in range(256) if x not in B])
+BkeyMatrix = np.reshape(B, (16,16))
+log.debug('R key matrix:')
+log.debug(RkeyMatrix)
+log.debug('G key matrix:')
+log.debug(GkeyMatrix)
+log.debug('B key matrix:')
+log.debug(BkeyMatrix)
 encrypt()
 print('Encrypt successful')
 time.sleep(2)
