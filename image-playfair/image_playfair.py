@@ -7,17 +7,26 @@ log.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%SZ",
     level=log.ERROR
 )
-EXTRA_DIFFUSE = False
+EXTRA_DIFFUSE = True
 def removeDuplicates(array):
+    '''
+    Removes duplicates from the given array
+    '''
     newArr = []
     for i in array:
         if i not in newArr:
             newArr.append(i)
     return newArr
 def printMat(mat):
-	for m in mat:
-		print(m)
+    '''
+    Print matrix
+    '''
+    for m in mat:
+        print(m)
 def readRGB(filename,resize=False):
+    '''
+    Read image and return RGB representation
+    '''
     img = Image.open(filename)
     if resize:
         size = 16,16
@@ -40,6 +49,9 @@ def readRGB(filename,resize=False):
                 pass
     return (R,G,B,A,img.size)
 def encryptDecryptPixel(encryptResult,i,halfLength,colorKeyMatrix,color,isEncryption=True):
+    '''
+    Encrypt/Decrypt the pixel data based on the Key Matrix
+    '''
     floc = findLoc(colorKeyMatrix,color[i])
     sloc = findLoc(colorKeyMatrix,color[halfLength+i])
     if isEncryption:
@@ -74,9 +86,15 @@ def encryptDecryptPixel(encryptResult,i,halfLength,colorKeyMatrix,color,isEncryp
             encryptResult[halfLength+i] = colorKeyMatrix[sloc[0],floc[1]]
 
 def findLoc(mat,x):
+    '''
+    find the x and y coordinates of the given pixel
+    '''
     coordinates = np.where(mat==x)
     return [coordinates[0][0],coordinates[1][0]]
 def encrypt():
+    '''
+    Accept image to be encrypted and return the encrypted image based on the key
+    '''
     inp = input("Enter image file name to encrypt= ")
     R,G,B,A,sizes=readRGB(inp,False)
     #R,G,B,A,sizes=readRGB('download.png',False)
@@ -88,9 +106,9 @@ def encrypt():
     halfLength = len(R)//2
     for i in range(halfLength):
     #   encryptDecryptPixel(encryptedR,i,halfLength,BkeyMatrix,R)
-        encryptDecryptPixel(encryptedR,i,halfLength,RkeyMatrix,R)
-        encryptDecryptPixel(encryptedG,i,halfLength,RkeyMatrix,G)
-        encryptDecryptPixel(encryptedB,i,halfLength,RkeyMatrix,B)
+        encryptDecryptPixel(encryptedR,i,halfLength,FinalKeyMatrix,R)
+        encryptDecryptPixel(encryptedG,i,halfLength,FinalKeyMatrix,G)
+        encryptDecryptPixel(encryptedB,i,halfLength,FinalKeyMatrix,B)
     #    encryptDecryptPixel(encryptedB,i,halfLength,GkeyMatrix,B)
     fullImage1D=[]
     log.debug(f'encryption {R=}')
@@ -109,6 +127,9 @@ def encrypt():
     image.save('enc.png')
 
 def decrypt():
+    '''
+    Accept image to be decrypted and return the decrypted image based on the key
+    '''
     #inp = input("Enter image file name to encrypt= ")
     #R,G,B=readRGB(inp,False)
     R,G,B,A,sizes=readRGB('enc.png',False)
@@ -118,9 +139,9 @@ def decrypt():
     halfLength = len(R)//2
     for i in range(halfLength):
         #encryptDecryptPixel(decryptedR,i,halfLength,BkeyMatrix,R,False)
-        encryptDecryptPixel(decryptedR,i,halfLength,RkeyMatrix,R,False)
-        encryptDecryptPixel(decryptedG,i,halfLength,RkeyMatrix,G,False)
-        encryptDecryptPixel(decryptedB,i,halfLength,RkeyMatrix,B,False)
+        encryptDecryptPixel(decryptedR,i,halfLength,FinalKeyMatrix,R,False)
+        encryptDecryptPixel(decryptedG,i,halfLength,FinalKeyMatrix,G,False)
+        encryptDecryptPixel(decryptedB,i,halfLength,FinalKeyMatrix,B,False)
         #encryptDecryptPixel(decryptedB,i,halfLength,GkeyMatrix,B,False)
     fullImage1D=[]
     log.debug(f'decryption {R=}')
@@ -151,6 +172,13 @@ log.debug('G key matrix:')
 log.debug(GkeyMatrix)
 log.debug('B key matrix:')
 log.debug(BkeyMatrix)
+F = removeDuplicates([(int(R[i])+int(G[i])+int(B[i]))%256 for i in range(256)])
+# for i in range(256):
+#     s = 
+#     if s not in F: 
+#         F.append(s)
+F.extend([x for x in range(256) if x not in F])
+FinalKeyMatrix = np.reshape(F, (16,16))
 encrypt()
 print('Encrypt successful')
 time.sleep(2)
